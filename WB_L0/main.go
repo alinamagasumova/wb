@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 	"database/sql"
-	"github.com/lib/pq"
+	_"github.com/lib/pq"
 )
 
 func home_page(w http.ResponseWriter, r *http.Request) {
@@ -22,19 +22,23 @@ func home_page(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal Server Error", 500)
 	}
 }
-func handleReq() {
-	http.HandleFunc("/", home_page)
-	http.ListenAndServe(":3009", nil)
-}
 
 func main() {
-	handleReq()
-	connStr := "user=postgres dbname=orders password=123 host=localhost sslmode=disable"
+	// connect to db
+	connStr := "user=postgres dbname=orders password=123 sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Connecting to bd successful")
 	defer db.Close()
-	  
+
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Connecting to bd successful")
+
+	// creating http
+	http.HandleFunc("/", home_page)
+	http.ListenAndServe(":3009", nil)
 }
